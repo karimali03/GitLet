@@ -81,7 +81,7 @@ public class Repository implements Serializable {
             return;
         }
 
-        String fileHash = Utils.sha1(Utils.readContentsAsString(file)) ;
+        String fileHash = Utils.sha1(fileName) ;
         Commit lastCommit = this.uidToCommit(getHead()) ;
         HashMap<String , String> trackedFiles = lastCommit.getFiles() ;
 
@@ -172,6 +172,7 @@ public class Repository implements Serializable {
         if (this.stagingArea.containsKey(fileName)) {
             String fileHash = this.stagingArea.get(fileName);
             File stagedFile = join(STAGING_DIR, fileHash);
+            
             if (stagedFile.exists()) {
                 stagedFile.delete(); // Delete the file from STAGING_DIR
             }

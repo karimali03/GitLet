@@ -82,7 +82,12 @@ public class Main {
                 if (parameters.length == 0) {
                     System.out.println("No commit message provided.");
                 } else {
-                    myRepo.commit(parameters[0]);
+                    String message = "" ;
+                    for(String parameter : parameters) {
+                        message += parameter + " ";
+                    }
+
+                    myRepo.commit(message);
                     saveMyRepo(); // Save repository state after modification
                 }
                 break;
