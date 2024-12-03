@@ -1,26 +1,81 @@
 package gitlet;
 
-// TODO: any imports you need here
+import java.util.Date;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.HashMap;
 
-import java.util.Date; // TODO: You'll likely use this in this class
-
-/** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
- *
- *  @author TODO
- */
-public class Commit {
-    /**
-     * TODO: add instance variables here.
-     *
-     * List all instance variables of the Commit class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided one example for `message`.
-     */
-
-    /** The message of this Commit. */
+public class Commit implements Serializable{
+    /** The commit message.*/
     private String message;
 
-    /* TODO: fill in the rest of this class. */
+    /** The date of the commit.*/
+    private String timestamp;
+
+    /** A list of strings of hashes of Blobs that are being
+     * tracked.*/
+    private HashMap<String , String> files;
+
+    /** An array of Hashes of parents. */
+    private String[] parents;
+
+    /** The hash of this commit. */
+    private String universalID;
+
+    public Commit(String message , HashMap<String , String> files , String[] parents , boolean isIntial){
+        this.message = message ;
+        this.files = files ;
+        this.parents = parents ;
+
+        this.timestamp = isIntial ? new Date().toString() : Utils.DATE_FORMAT.format(new Date());
+        this.universalID = this.hashCommit() ;
+    }
+
+    public String hashCommit(){
+        String tmpFiles ;
+        if(this.files == null){
+            tmpFiles = "" ;
+        }
+        else{
+            tmpFiles = this.files.toString() ;
+        }
+
+        String parents = Arrays.toString(this.parents) ;
+
+        return Utils.sha1(this.message , tmpFiles , this.timestamp , parents) ;
+    }
+
+    /** Returns one to create an initial commit easily.*/
+    public static Commit initialCommit() {
+        return new Commit("initial commit", null, null, false);
+    }
+
+    public String getMessage(){
+        return this.message;
+    }
+
+    public String getTimestamp(){
+        return this.timestamp;
+    }
+
+    public HashMap<String , String> getFiles(){
+        return this.files;
+    }
+
+    public String[] getParents(){
+        return this.parents;
+    }
+
+    public String getParentID(){
+        if(this.parents == null){
+            return null ;
+        }
+
+        return this.parents[0] ;
+    }
+
+    public String getUniversalID(){
+        return this.universalID;
+    }
 }

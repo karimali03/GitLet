@@ -17,6 +17,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
+import java.text.SimpleDateFormat;
+
 
 
 /** Assorted utilities.
@@ -27,6 +29,8 @@ import java.util.List;
  *  @author P. N. Hilfinger
  */
 class Utils {
+    /** The date format. */
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
 
     // check if already .gitlet directory exist
     public static boolean isRepoInitialized() {
@@ -81,6 +85,7 @@ class Utils {
             throw new IllegalArgumentException("not .gitlet working directory");
         }
         if (!file.isDirectory()) {
+            System.out.println("not .gitlet working directory");
             return file.delete();
         } else {
             return false;
@@ -125,23 +130,25 @@ class Utils {
     static void writeContents(File file, Object... contents) {
         try {
             if (file.isDirectory()) {
-                throw
-                    new IllegalArgumentException("cannot overwrite directory");
+                throw new IllegalArgumentException("Cannot overwrite directory: " + file.getPath());
             }
             BufferedOutputStream str =
-                new BufferedOutputStream(Files.newOutputStream(file.toPath()));
+                    new BufferedOutputStream(Files.newOutputStream(file.toPath()));
             for (Object obj : contents) {
                 if (obj instanceof byte[]) {
                     str.write((byte[]) obj);
-                } else {
+                } else if (obj instanceof String) {
                     str.write(((String) obj).getBytes(StandardCharsets.UTF_8));
+                } else {
+                    throw new IllegalArgumentException("Unsupported content type: " + obj.getClass());
                 }
             }
             str.close();
-        } catch (IOException | ClassCastException excp) {
-            throw new IllegalArgumentException(excp.getMessage());
+        } catch (IOException excp) {
+            throw new IllegalArgumentException("I/O error: " + excp.getMessage(), excp);
         }
     }
+
 
     /** Return an object of type T read from FILE, casting it to EXPECTEDCLASS.
      *  Throws IllegalArgumentException in case of problems. */
