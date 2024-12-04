@@ -61,7 +61,6 @@ public class Main {
         File root = new File(ROOTPATH);
         Utils.writeObject(root, myRepo);
     }
-
     /**
      * Handles command execution.
      */
@@ -105,6 +104,14 @@ public class Main {
                 break;
             case "global-log" :
                 myRepo.globalLog();
+                break;
+            case "checkout":
+                if (parameters.length == 0) {
+                    System.out.println("The input is empty! ERROR!");
+                } else {
+                    myRepo.checkout(parameters);
+                    saveMyRepo(); // Save repository state after modification
+                }
                 break;
             default:
                 System.out.println("Unknown command: " + command);

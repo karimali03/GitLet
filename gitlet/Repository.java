@@ -12,7 +12,6 @@ public class Repository implements Serializable {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, "/.gitlet");
-
     public  static  final File COMMITS_DIR = join(CWD, "/.gitlet/commits");
     public  static  final File STAGING_DIR = join(CWD, "/.gitlet/staging");
 
@@ -52,6 +51,12 @@ public class Repository implements Serializable {
      * corresponds to the head branch. */
     public String getHead() {
         return this.branches.get(this.head);
+    }
+
+    // check if there are uncommited changes
+    public boolean hasUncommittedChanges() {
+        // Logic to check for uncommitted changes in the repository
+        return !this.stagingArea.isEmpty() || !this.untrackedFiles.isEmpty();
     }
 
     /*********************** INIT ****************/
@@ -222,5 +227,161 @@ public class Repository implements Serializable {
         for (File file : commits) {
             printCommit(file.getName());
         }
+    }
+
+    // checkout 4-functions usage
+    public void checkout(String[] parameters) {
+        // Check for uncommitted changes before proceeding
+        if (hasUncommittedChanges()) {
+            Utils.message("You have uncommitted changes. Commit or discard them before switching branches.");
+            throw new GitletException(); // Prevent checkout with uncommitted changes
+        }
+        else if (parameters.length == 2 && parameters[0].equals("restore")) {
+            // Case 1: Restore a file to its version in the current commit
+            String fileName = parameters[1];
+            restoreFileToCurrentCommit(fileName);
+        } else if (parameters.length == 3 && parameters[1].equals("restore")) {
+            // Case 2: Restore a file to its version in a specific commit
+            String commitId = parameters[0];
+            String fileName = parameters[2];
+            restoreFileToSpecificCommit(commitId, fileName);
+        } else if (parameters.length == 2 && parameters[0].equals("new")) {
+            // Case 3: Switch to another branch
+            String requiredID = parameters[1];
+            // Ensure the branch name is valid
+            if (requiredID == null || requiredID.trim().isEmpty()) {
+                Utils.message("Please specify a valid ID.");
+                throw new GitletException();
+            }
+            else {
+                moveHead(requiredID);
+            }
+        }
+        else if (parameters.length == 2 && parameters[0].equals("branch")) {
+            // Case 3: Switch to another branch
+            String branchName = parameters[1];
+            // Ensure the branch name is valid
+            if (branchName == null || branchName.trim().isEmpty()) {
+                Utils.message("Please specify a branch name.");
+                throw new GitletException();
+            }
+            else {
+                switchBranch(branchName);
+            }
+        } else {
+            Utils.message("Incorrect Arguments for Checkout.");
+            throw new GitletException();
+        }
+    }
+    // for restore a file in the current commmit if we make a change without making commit to it
+    public void restoreFileToCurrentCommit(String fileName) {
+        Commit currentCommit = uidToCommit(getHead());
+        HashMap<String, String> trackedFiles = currentCommit.getFiles();
+
+        if (trackedFiles == null || !trackedFiles.containsKey(fileName)) {
+            Utils.message("File doesn't exist in that commit.");
+            throw new GitletException();
+        }
+
+        String fileHash = trackedFiles.get(fileName);
+        File blobFile = join(STAGING_DIR, fileHash);
+
+        if (!blobFile.exists()) {
+            Utils.message("File contents are missing from the repository.");
+            throw new GitletException();
+        }
+
+        String contents = Utils.readContentsAsString(blobFile);
+        Utils.writeContents(new File(fileName), contents);
+    }
+
+    // for restore a file in the another commmit if we make a change without making commit to it
+    public void restoreFileToSpecificCommit(String commitId, String fileName) {
+        Commit commit = uidToCommit(commitId);
+        HashMap<String, String> trackedFiles = commit.getFiles();
+
+        if (trackedFiles == null || !trackedFiles.containsKey(fileName)) {
+            Utils.message("File doesn't exist in that commit.");
+            throw new GitletException();
+        }
+
+        String fileHash = trackedFiles.get(fileName);
+        File blobFile = join(STAGING_DIR, fileHash);
+
+        if (!blobFile.exists()) {
+            Utils.message("File contents are missing from the repository.");
+            throw new GitletException();
+        }
+
+        String contents = Utils.readContentsAsString(blobFile);
+        Utils.writeContents(new File(fileName), contents);
+    }
+
+    // switching from branch to another
+    public void switchBranch(String branchName) {
+        if (!branches.containsKey(branchName)) {
+            Utils.message("No such branch exists.");
+            throw new GitletException();
+        }
+
+        if (branchName.equals(head)) {
+            Utils.message("No need to checkout the current branch.");
+            throw new GitletException();
+        }
+
+        head = branchName;
+        String commitId = branches.get(head);
+        Commit commit = uidToCommit(commitId);
+
+        // Clear working directory and reset to the branch's commit
+        HashMap<String, String> trackedFiles = commit.getFiles();
+        if (trackedFiles != null) {
+            for (String fileName : trackedFiles.keySet()) {
+                String fileHash = trackedFiles.get(fileName);
+                File blobFile = join(STAGING_DIR, fileHash);
+                String contents = Utils.readContentsAsString(blobFile);
+                Utils.writeContents(new File(fileName), contents);
+            }
+        }
+
+        stagingArea.clear();
+        untrackedFiles.clear();
+    }
+
+    // for moving the head from the current commit to another
+    public void moveHead(String commitId) {
+        // Step 1: Find the commit in the repository
+        Commit targetCommit = uidToCommit(commitId);
+        if (targetCommit == null) {
+            System.out.println("Commit with ID " + commitId + " not found.");
+            return;
+        }
+
+        // Step 2: Restore the files to the working directory from the commit
+        HashMap<String, String> filesInCommit = targetCommit.getFiles();
+        if (filesInCommit == null || filesInCommit.isEmpty()) {
+            System.out.println("No files to restore from this commit.");
+            return;
+        }
+
+        // Step 3: For each file in the commit, restore it to the working directory
+        for (String fileName : filesInCommit.keySet()) {
+            String fileHash = filesInCommit.get(fileName);
+            File fileToRestore = join(CWD, fileName); // Path to restore the file to
+
+            // Restore the file's content from the staging area (or commit blob)
+            File commitBlob = join(STAGING_DIR, fileHash); // Staging area file
+            if (commitBlob.exists()) {
+                String fileContents = Utils.readContentsAsString(commitBlob);
+                Utils.writeContents(fileToRestore, fileContents);
+                System.out.println("Restored file: " + fileName);
+            } else {
+                System.out.println("No file found to restore for " + fileName);
+            }
+        }
+
+        // Step 4: Update the HEAD to point to this commit (but don't modify branches)
+        this.head = commitId;  // Update HEAD to point to the checked-out commit
+        System.out.println("Checked out commit " + commitId + " and updated HEAD.");
     }
 }
