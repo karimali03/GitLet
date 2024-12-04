@@ -86,7 +86,7 @@ public class Repository implements Serializable {
             return;
         }
 
-        String fileHash = Utils.sha1(fileName) ;
+        String fileHash = Utils.sha1(fileName  + Utils.readContentsAsString(file)) ;
         Commit lastCommit = this.uidToCommit(getHead()) ;
         HashMap<String , String> trackedFiles = lastCommit.getFiles() ;
 
@@ -229,6 +229,8 @@ public class Repository implements Serializable {
         }
     }
 
+
+    /*********************** CHECKOUT ****************/
     // checkout 4-functions usage
     public void checkout(String[] parameters) {
         // Check for uncommitted changes before proceeding
