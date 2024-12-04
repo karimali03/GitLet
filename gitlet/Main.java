@@ -66,9 +66,11 @@ public class Main {
      */
     public static void runCommand(String command, String[] parameters) {
         switch (command) {
+            //command : java gitlet.Main init
             case "init":
                 System.out.println("Repository is already initialized.");
                 break;
+            //command : java gitlet.Main add {file_name}
             case "add":
                 if (parameters.length == 0) {
                     System.out.println("No file specified to add.");
@@ -77,6 +79,7 @@ public class Main {
                     saveMyRepo(); // Save repository state after modification
                 }
                 break;
+            //command : java gitlet.Main commit -m {message}
             case "commit":
                 if (parameters.length == 0) {
                     System.out.println("No commit message provided.");
@@ -90,6 +93,7 @@ public class Main {
                     saveMyRepo(); // Save repository state after modification
                 }
                 break;
+            //command : java gitlet.Main rm {file_name}
             case "rm" :
                 if (parameters.length == 0) {
                     System.out.println("No file specified to remove.");
@@ -99,12 +103,18 @@ public class Main {
                     saveMyRepo();
                 }
                 break;
+            //command : java gitlet.Main log
             case "log":
                 myRepo.log();
                 break;
+            //command : java gitlet.Main global-log
             case "global-log" :
                 myRepo.globalLog();
                 break;
+            /*
+            * 1) command : java gitlet.Main {commit_id} restore {file_name}
+            * 2) command : java gitlet.Main restore {file_name}
+            * */
             case "checkout":
                 if (parameters.length == 0) {
                     System.out.println("The input is empty! ERROR!");
