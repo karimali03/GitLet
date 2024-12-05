@@ -386,7 +386,7 @@ public class Repository implements Serializable {
     // find all ids of a commit message
     public void find(String commitName){
         String tmpHead = getHead();
-
+        boolean ch = true;
         while(tmpHead != null){
             Commit currentCommit = uidToCommit(tmpHead);
             String messageName = currentCommit.getMessage();
@@ -394,10 +394,14 @@ public class Repository implements Serializable {
             sb.deleteCharAt(messageName.length() - 1);
             if(sb.toString().equals(commitName)){
                 System.out.println(tmpHead);
+                ch = false;
             }
             // System.out.println("." + currentCommit.getMessage() + ".");
             // System.out.println(commitName);
             tmpHead = currentCommit.getParentID();
+        }
+        if(ch){
+            System.out.println("There isn't a commit with that name.");
         }
     }
 
