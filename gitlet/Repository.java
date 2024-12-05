@@ -259,7 +259,7 @@ public class Repository implements Serializable {
                 moveHead(requiredID);
             }
         }
-        else if (parameters.length == 2 && parameters[0].equals("branch")) {
+        /*else if (parameters.length == 2 && parameters[0].equals("branch")) {
             // Case 3: Switch to another branch
             String branchName = parameters[1];
             // Ensure the branch name is valid
@@ -270,7 +270,8 @@ public class Repository implements Serializable {
             else {
                 switchBranch(branchName);
             }
-        } else {
+        } */
+        else {
             Utils.message("Incorrect Arguments for Checkout.");
             throw new GitletException();
         }
@@ -320,7 +321,7 @@ public class Repository implements Serializable {
     }
 
     // switching from branch to another
-    public void switchBranch(String branchName) {
+    /*public void switchBranch(String branchName) {
         if (!branches.containsKey(branchName)) {
             Utils.message("No such branch exists.");
             throw new GitletException();
@@ -348,7 +349,7 @@ public class Repository implements Serializable {
 
         stagingArea.clear();
         untrackedFiles.clear();
-    }
+    }*/
 
     // for moving the head from the current commit to another
     public void moveHead(String commitId) {
