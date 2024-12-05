@@ -383,5 +383,22 @@ public class Repository implements Serializable {
 
         System.out.println("CheckeOut into: " + commitID);
     }
+    // find all ids of a commit message
+    public void find(String commitName){
+        String tmpHead = getHead();
+
+        while(tmpHead != null){
+            Commit currentCommit = uidToCommit(tmpHead);
+            String messageName = currentCommit.getMessage();
+            StringBuilder sb = new StringBuilder(messageName);
+            sb.deleteCharAt(messageName.length() - 1);
+            if(sb.toString().equals(commitName)){
+                System.out.println(tmpHead);
+            }
+            // System.out.println("." + currentCommit.getMessage() + ".");
+            // System.out.println(commitName);
+            tmpHead = currentCommit.getParentID();
+        }
+    }
 
 }

@@ -126,6 +126,18 @@ public class Main {
                     saveMyRepo(); // Save repository state after modification
                 }
                 break;
+            case "find":
+                if (parameters.length == 0) {
+                    System.out.println("Please give me the commit message!");
+                }
+                else if (parameters.length > 1) {
+                    System.out.println("Error in input, should be one patameter (the message name)");
+                }
+                else {
+                    myRepo.find(parameters[0]);
+                    saveMyRepo(); // Save repository state after modification
+                }
+                break;
             default:
                 System.out.println("Unknown command: " + command);
                 break;
