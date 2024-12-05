@@ -401,7 +401,7 @@ public class Repository implements Serializable {
             tmpHead = currentCommit.getParentID();
         }
         if(ch){
-            System.out.println("There isn't a commit with that name.");
+            System.out.println("Found no commit with that message.");
         }
     }
 
