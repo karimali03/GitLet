@@ -112,8 +112,11 @@ public class Main {
                 myRepo.globalLog();
                 break;
             /*
-            * 1) command : java gitlet.Main {commit_id} restore {file_name}
-            * 2) command : java gitlet.Main restore {file_name}
+            * 1) command : java gitlet.Main {commit_id} restore {file_name} -> update data of a specific file to that in a specific commit
+            * 2) command : java gitlet.Main restore {file_name} -> update data of a specific file to that in the current commit
+                   (that if you modify the file but don't commit and want to retain tha data of that file in the last commit)
+            * 3) command : java gitlet.Main new {commit_id} -> move from a current commit to another
+                   (make the CWD containing all the files in that new commit)
             * */
             case "checkout":
                 if (parameters.length == 0) {

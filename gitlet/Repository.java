@@ -256,7 +256,7 @@ public class Repository implements Serializable {
                 throw new GitletException();
             }
             else {
-                moveHead(requiredID);
+                checkoutCommit(requiredID);
             }
         }
         /*else if (parameters.length == 2 && parameters[0].equals("branch")) {
@@ -351,40 +351,37 @@ public class Repository implements Serializable {
         untrackedFiles.clear();
     }*/
 
-    // for moving the head from the current commit to another
-    public void moveHead(String commitId) {
-        // Step 1: Find the commit in the repository
-        Commit targetCommit = uidToCommit(commitId);
+    // for moving from the current commit to another
+    public void checkoutCommit(String commitID) {
+        // find the commit using its ID
+        Commit targetCommit = uidToCommit(commitID);
         if (targetCommit == null) {
-            System.out.println("Commit with ID " + commitId + " not found.");
-            return;
+            Utils.message("No commit with that id exists.");
+            throw new GitletException();
         }
 
-        // Step 2: Restore the files to the working directory from the commit
-        HashMap<String, String> filesInCommit = targetCommit.getFiles();
-        if (filesInCommit == null || filesInCommit.isEmpty()) {
-            System.out.println("No files to restore from this commit.");
-            return;
-        }
-
-        // Step 3: For each file in the commit, restore it to the working directory
-        for (String fileName : filesInCommit.keySet()) {
-            String fileHash = filesInCommit.get(fileName);
-            File fileToRestore = join(CWD, fileName); // Path to restore the file to
-
-            // Restore the file's content from the staging area (or commit blob)
-            File commitBlob = join(STAGING_DIR, fileHash); // Staging area file
-            if (commitBlob.exists()) {
-                String fileContents = Utils.readContentsAsString(commitBlob);
-                Utils.writeContents(fileToRestore, fileContents);
-                System.out.println("Restored file: " + fileName);
-            } else {
-                System.out.println("No file found to restore for " + fileName);
+        // update the working directory with files from the target commit
+        HashMap<String, String> targetFiles = targetCommit.getFiles();
+        for (File file : CWD.listFiles()) {
+            if (!file.isDirectory()) {
+                Utils.restrictedDelete(file); // for removing all files existing to move into the new commit
             }
         }
 
-        // Step 4: Update the HEAD to point to this commit (but don't modify branches)
-        this.head = commitId;  // Update HEAD to point to the checked-out commit
-        System.out.println("Checked out commit " + commitId + " and updated HEAD.");
+        if (targetFiles != null) {
+            for (String fileName : targetFiles.keySet()) {
+                String fileHash = targetFiles.get(fileName);
+                File blobFile = join(STAGING_DIR, fileHash);
+                String fileContent = Utils.readContentsAsString(blobFile);
+                File restoredFile = join(CWD, fileName);
+                Utils.writeContents(restoredFile, fileContent);
+            }
+        }
+        // clearing staging area and updating head
+        this.stagingArea.clear();
+        this.branches.put(this.head, commitID);
+
+        System.out.println("CheckeOut into: " + commitID);
     }
+
 }
