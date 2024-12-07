@@ -138,6 +138,14 @@ public class Main {
                     saveMyRepo(); // Save repository state after modification
                 }
                 break;
+            case "status":
+                if (parameters.length > 0) {
+                    System.out.println("There shouldn't be parameters after status");
+                }
+                else {
+                    myRepo.status();
+                }
+                break;
             default:
                 System.out.println("Unknown command: " + command);
                 break;

@@ -404,5 +404,107 @@ public class Repository implements Serializable {
             System.out.println("Found no commit with that message.");
         }
     }
+    // get status of gitlet
+    public void status() {
+        System.out.println("=== Branches ===");
+        for (String branchName : this.branches.keySet()) {
+            if (branchName.equals(this.head)) {
+                System.out.println("*" + branchName);
+            } else {
+                System.out.println(branchName);
+            }
+        }
+        System.out.println();
+    
+        System.out.println("=== Staged Files ===");
+        for (String stagedFile : this.stagingArea.keySet()) {
+            System.out.println(stagedFile);
+        }
+        System.out.println();
+    
+        System.out.println("=== Removed Files ===");
+        for (String removedFile : this.untrackedFiles) {
+            System.out.println(removedFile);
+        }
+        System.out.println();
+    
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        ArrayList<String> modifiedFiles = getModifications();
+        for (String modifiedFile : modifiedFiles) {
+            System.out.println(modifiedFile);
+        }
+        System.out.println();
+    
+        System.out.println("=== Untracked Files ===");
+        ArrayList<String> untracked = getUntrackedFilesCWD();
+        for (String untrackedFile : untracked) {
+            System.out.println(untrackedFile);
+        }
+        System.out.println();
+    }
+    
+    public ArrayList<String> getUntrackedFilesCWD() {
+        ArrayList<String> untracked = new ArrayList<>();
+        File[] cwdFiles = CWD.listFiles();
+    
+        for (File file : cwdFiles) {
+            String fileName = file.getName();
+            boolean isTracked = false;
+    
+            // Check if file is tracked
+            Commit lastCommit = uidToCommit(getHead());
+            if (lastCommit.getFiles() != null && lastCommit.getFiles().containsKey(fileName)) {
+                isTracked = true;
+            }
+    
+            // Check if file is staged
+            if (this.stagingArea.containsKey(fileName)) {
+                isTracked = true;
+            }
+    
+            // If not tracked or staged, add to untracked
+            if (!isTracked && !file.isDirectory()) {
+                untracked.add(fileName);
+            }
+        }
+        
+        return untracked;
+    }
+    
+    public ArrayList<String> getModifications() {
+        ArrayList<String> modifications = new ArrayList<>();
+        // check modifications in staging area
+        for (String fileName : this.stagingArea.keySet()) {
+            File file = new File(fileName);
+            String stagedHash = this.stagingArea.get(fileName);
+    
+            if (!file.exists()) {
+                modifications.add(fileName + " (deleted)");
+            } else {
+                String currentHash = Utils.sha1(Utils.readContents(file));
+                if (!currentHash.equals(stagedHash)) {
+                    modifications.add(fileName + " (modified)");
+                }
+            }
+        }
+        // check modifications in the tracked files
+        Commit lastCommit = uidToCommit(getHead());
+        if (lastCommit.getFiles() != null) {
+            for (String fileName : lastCommit.getFiles().keySet()) {
+                File file = new File(fileName);
+                if (!file.exists()) {
+                    modifications.add(fileName + " (deleted)");
+                } else {
+                    String currentHash = Utils.sha1(Utils.readContents(file));
+                    String lastCommitHash = lastCommit.getFiles().get(fileName);
+                    if (!currentHash.equals(lastCommitHash) && !this.stagingArea.containsKey(fileName)) {
+                        modifications.add(fileName + " (modified)");
+                    }
+                }
+            }
+        }
+        
+        return modifications;
+    }    
 
 }
