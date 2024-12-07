@@ -482,7 +482,9 @@ public class Repository implements Serializable {
                 modifications.add(fileName + " (deleted)");
             } else {
                 String currentHash = Utils.sha1(Utils.readContents(file));
-                if (!currentHash.equals(stagedHash)) {
+                StringBuilder sh = new StringBuilder(stagedHash);
+                StringBuilder ch = new StringBuilder(currentHash);
+                if (!sh.toString().equals(ch.toString())) {
                     modifications.add(fileName + " (modified)");
                 }
             }
@@ -497,7 +499,9 @@ public class Repository implements Serializable {
                 } else {
                     String currentHash = Utils.sha1(Utils.readContents(file));
                     String lastCommitHash = lastCommit.getFiles().get(fileName);
-                    if (!currentHash.equals(lastCommitHash) && !this.stagingArea.containsKey(fileName)) {
+                    StringBuilder lh = new StringBuilder(lastCommitHash);
+                    StringBuilder ch = new StringBuilder(currentHash);
+                    if (!lh.toString().equals(ch.toString()) && !this.stagingArea.containsKey(fileName)) {
                         modifications.add(fileName + " (modified)");
                     }
                 }
