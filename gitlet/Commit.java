@@ -1,81 +1,81 @@
 package gitlet;
 
-import java.util.Date;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.TreeMap;
 
-public class Commit implements Serializable{
-    /** The commit message.*/
-    private String message;
+import static gitlet.Utils.sha1;
 
-    /** The date of the commit.*/
-    private String timestamp;
+/** Creates a commit that stores various
+ * pieces of information.
+ * @author Rodrigo Espinoza
+ */
+public class Commit implements Serializable {
 
-    /** A list of strings of hashes of Blobs that are being
-     * tracked.*/
-    private HashMap<String , String> files;
+    /** Hash of the current commit.
+     */
+    private String _ownID;
 
-    /** An array of Hashes of parents. */
-    private String[] parents;
+    /** Hash of the parent commit.
+     */
+    private String _parentID;
 
-    /** The hash of this commit. */
-    private String universalID;
+    /** Time when the commit was made.
+     */
+    private String _timeStamp;
 
-    public Commit(String message , HashMap<String , String> files , String[] parents , boolean isIntial){
-        this.message = message ;
-        this.files = files ;
-        this.parents = parents ;
+    /** Commit message.
+     */
+    private String _message;
 
-        this.timestamp = isIntial ? new Date().toString() : Utils.DATE_FORMAT.format(new Date());
-        this.universalID = this.hashCommit() ;
+    /** Contains blobs as
+     *  filename and hash.
+     *  Hash being the pathname to
+     *  the blob.
+     */
+    private TreeMap<String, String> _blobs;
+
+    public Commit(String msg, String pID,
+                  TreeMap<String, String> blobs, String date) {
+        this._timeStamp = date;
+        this._parentID = pID;
+        this._message = msg;
+        this._ownID = sha1(msg, pID, this._timeStamp);
+        this._blobs = blobs;
+
     }
 
-    public String hashCommit(){
-        String tmpFiles ;
-        if(this.files == null){
-            tmpFiles = "" ;
-        }
-        else{
-            tmpFiles = this.files.toString() ;
-        }
-
-        String parents = Arrays.toString(this.parents) ;
-
-        return Utils.sha1(this.message , tmpFiles , this.timestamp , parents) ;
+    public String getOwnID() {
+        return this._ownID;
     }
 
-    /** Returns one to create an initial commit easily.*/
-    public static Commit initialCommit() {
-        return new Commit("initial commit", null, null, false);
+    public String getParentID() {
+        return this._parentID;
     }
 
-    public String getMessage(){
-        return this.message;
+    public String getMsg() {
+        return this._message;
     }
 
-    public String getTimestamp(){
-        return this.timestamp;
+    public String getTimeStamp() {
+        return this._timeStamp;
     }
 
-    public HashMap<String , String> getFiles(){
-        return this.files;
+    public TreeMap<String, String> getBlobs() {
+        return this._blobs;
     }
 
-    public String[] getParents(){
-        return this.parents;
+    public void changeOwnID(String hash) {
+        this._ownID = hash;
     }
 
-    public String getParentID(){
-        if(this.parents == null){
-            return null ;
-        }
-
-        return this.parents[0] ;
+    public String toString() {
+        String msg = "=== \n";
+        msg += "commit " + getOwnID() + "\n";
+        msg += "Date: " + getTimeStamp() + "\n";
+        msg += getMsg() + "\n";
+        return msg;
     }
 
-    public String getUniversalID(){
-        return this.universalID;
-    }
 }
+
+

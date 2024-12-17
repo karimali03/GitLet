@@ -1,3 +1,5 @@
+/* Copyright (C) 2015, 2022 Paul N. Hilfinger and the Regents of the
+ * University of California.  All rights reserved. */
 package gitlet;
 
 import java.io.BufferedOutputStream;
@@ -17,32 +19,17 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
-import java.text.SimpleDateFormat;
-
 
 
 /** Assorted utilities.
- *
- * Give this file a good read as it provides several useful utility functions
- * to save you some time.
- *
  *  @author P. N. Hilfinger
  */
 class Utils {
-    /** The date format. */
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
 
-    // check if already .gitlet directory exist
-    public static boolean isRepoInitialized() {
-        String rootDirPath = System.getProperty("user.dir");
-        File tmpDir = new File(rootDirPath + "/.gitlet");
-        return tmpDir.exists();
-    }
+    /* SHA-1 HASH VALUES. */
 
     /** The length of a complete SHA-1 UID as a hexadecimal numeral. */
     static final int UID_LENGTH = 40;
-
-    /* SHA-1 HASH VALUES. */
 
     /** Returns the SHA-1 hash of the concatenation of VALS, which may
      *  be any mixture of byte arrays and Strings. */
@@ -85,7 +72,6 @@ class Utils {
             throw new IllegalArgumentException("not .gitlet working directory");
         }
         if (!file.isDirectory()) {
-            System.out.println("not .gitlet working directory");
             return file.delete();
         } else {
             return false;
@@ -130,29 +116,28 @@ class Utils {
     static void writeContents(File file, Object... contents) {
         try {
             if (file.isDirectory()) {
-                throw new IllegalArgumentException("Cannot overwrite directory: " + file.getPath());
+                throw
+                    new IllegalArgumentException("cannot overwrite directory");
             }
             BufferedOutputStream str =
-                    new BufferedOutputStream(Files.newOutputStream(file.toPath()));
+                new BufferedOutputStream(Files.newOutputStream(file.toPath()));
             for (Object obj : contents) {
                 if (obj instanceof byte[]) {
                     str.write((byte[]) obj);
-                } else if (obj instanceof String) {
-                    str.write(((String) obj).getBytes(StandardCharsets.UTF_8));
                 } else {
-                    throw new IllegalArgumentException("Unsupported content type: " + obj.getClass());
+                    str.write(((String) obj).getBytes(StandardCharsets.UTF_8));
                 }
             }
             str.close();
-        } catch (IOException excp) {
-            throw new IllegalArgumentException("I/O error: " + excp.getMessage(), excp);
+        } catch (IOException | ClassCastException excp) {
+            throw new IllegalArgumentException(excp.getMessage());
         }
     }
 
-
     /** Return an object of type T read from FILE, casting it to EXPECTEDCLASS.
      *  Throws IllegalArgumentException in case of problems. */
-    static <T extends Serializable> T readObject(File file, Class<T> expectedClass) {
+    static <T extends Serializable> T readObject(File file,
+                                                 Class<T> expectedClass) {
         try {
             ObjectInputStream in =
                 new ObjectInputStream(new FileInputStream(file));
@@ -203,11 +188,16 @@ class Utils {
 
     /* OTHER FILE UTILITIES */
 
+    /** Return the concatenation of FIRST and OTHERS into a File designator,
+     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
+     *  method. */
     static File join(String first, String... others) {
         return Paths.get(first, others).toFile();
     }
 
-
+    /** Return the concatenation of FIRST and OTHERS into a File designator,
+     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
+     *  method. */
     static File join(File first, String... others) {
         return Paths.get(first.getPath(), others).toFile();
     }
