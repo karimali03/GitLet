@@ -177,7 +177,7 @@ public class Reposotiry implements Serializable {
         if (!gitletExists()) {
             return;
         }
-        if (helper(2, args)) {
+        if (helper(3, args)) {
             return;
         }
         if (getStage().getAddFiles().isEmpty()
