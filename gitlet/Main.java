@@ -9,48 +9,50 @@ public class Main {
             System.out.println("Please enter a command.");
             return;
         }
-        
+
         Reposotiry repo = new Reposotiry(args[args.length-1]);
+        String[] newArgs = new String[args.length - 1];
+        System.arraycopy(args, 0, newArgs, 0, args.length - 1);
         
         switch (args[0]) {
             case "init":
-                repo.init(args);
+                repo.init(newArgs);
                 break;
             case "add":
-                repo.add(args);
+                repo.add(newArgs);
                 break;
             case "commit":
-                repo.commit(args);
+                repo.commit(newArgs);
                 break;
             case "rm":
-                repo.remove(args);
+                repo.remove(newArgs);
                 break;
             case "log":
-                repo.log(args);
+                repo.log(newArgs);
                 break;
             case "global-log":
-                repo.globalLog(args);
+                repo.globalLog(newArgs);
                 break;
             case "find":
-                repo.find(args);
+                repo.find(newArgs);
                 break;
             case "status":
-                repo.status(args);
+                repo.status(newArgs);
                 break;
             case "checkout":
-                repo.checkout(args);
+                repo.checkout(newArgs);
                 break;
             case "branch":
-                repo.branch(args);
+                repo.branch(newArgs);
                 break;
             case "rm-branch":
-                repo.removeBranch(args);
+                repo.removeBranch(newArgs);
                 break;
             case "reset":
-                repo.reset(args);
+                repo.reset(newArgs);
                 break;
             case "merge":
-                repo.merge(args);
+                repo.merge(newArgs);
                 break;
             default:
                 System.out.println("No command with that name exist.");

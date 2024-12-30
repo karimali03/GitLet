@@ -96,7 +96,7 @@ public class Reposotiry implements Serializable {
                     + "exists in the current directory.");
             return;
         }
-        if (helper(2, args)) {
+        if (helper(1, args)) {
             return;
         }
 
