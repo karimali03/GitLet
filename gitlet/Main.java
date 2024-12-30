@@ -5,11 +5,12 @@ import java.io.IOException;
 public class Main {
 
     public static void main(String... args) throws IOException {
-        Reposotiry repo = new Reposotiry();
         if (args.length == 0) {
             System.out.println("Please enter a command.");
             return;
         }
+        
+        Reposotiry repo = new Reposotiry(args[args.length-1]);
         
         switch (args[0]) {
             case "init":

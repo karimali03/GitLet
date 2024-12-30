@@ -20,40 +20,40 @@ public class Reposotiry implements Serializable {
 
     /** Pathname to the current working directory.
      */
-    private final File _CWD;
+    private  File _CWD;
 
     /** Pathname to the Gitlet directory.
      */
-    static final File GITLET = new File(".gitlet");
+    static  File GITLET = new File(".gitlet");
 
     /** Pathname to the Commits directory.
      */
-    static final File COMMITS = new File(GITLET
+    static  File COMMITS = new File(GITLET
             + File.separator + "commits");
 
     /** Pathname to the Branches directory.
      */
-    static final File BRANCHES = new File(GITLET
+    static  File BRANCHES = new File(GITLET
             + File.separator + "branches");
 
     /** Pathname to the Head Branch text file.
      */
-    static final File HEAD_BRANCH = new File(BRANCHES
+    static  File HEAD_BRANCH = new File(BRANCHES
             + File.separator + "head.txt");
 
     /** Pathname to the Staging Area text file.
      */
-    static final File STAGING_AREA = new File(GITLET
+    static  File STAGING_AREA = new File(GITLET
             + File.separator + "staging.txt");
 
     /** Pathname to the Blobs directory.
      */
-    static final File BLOBS = new File(GITLET
+    static  File BLOBS = new File(GITLET
             + File.separator + "blobs");
 
     /**Pathname to Global Log text file.
      */
-    static final File GLOBAL_LOG = new File(GITLET
+    static  File GLOBAL_LOG = new File(GITLET
             + File.separator + "global.txt");
 
     /** Contains the current Head Branch.
@@ -68,8 +68,16 @@ public class Reposotiry implements Serializable {
      */
     private StagingArea _staging;
 
-    public Reposotiry() {
-        this._CWD = new File(System.getProperty("user.dir"));
+    public Reposotiry(String Dir) {
+        this._CWD = new File(Dir);
+        GITLET = new File(_CWD, ".gitlet");
+        COMMITS = new File(GITLET, "commits");
+        BRANCHES = new File(GITLET, "branches");
+        HEAD_BRANCH = new File(BRANCHES, "head.txt");
+        STAGING_AREA = new File(GITLET, "staging.txt");
+        BLOBS = new File(GITLET, "blobs");
+        GLOBAL_LOG = new File(GITLET, "global.txt");
+
         if (HEAD_BRANCH.exists()) {
             this._headBranch = readObject(HEAD_BRANCH, Branch.class);
             File head = new File(COMMITS + File.separator
@@ -88,7 +96,7 @@ public class Reposotiry implements Serializable {
                     + "exists in the current directory.");
             return;
         }
-        if (helper(1, args)) {
+        if (helper(2, args)) {
             return;
         }
 
