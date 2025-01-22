@@ -1,14 +1,10 @@
-package gitlet;
+package commitra;
 
 import java.io.Serializable;
 import java.util.TreeMap;
 
-import static gitlet.Utils.sha1;
+import static commitra.Utils.sha1;
 
-/** Creates a commit that stores various
- * pieces of information.
- * @author Rodrigo Espinoza
- */
 public class Commit implements Serializable {
 
     /** Hash of the current commit.
@@ -32,15 +28,15 @@ public class Commit implements Serializable {
      *  Hash being the pathname to
      *  the blob.
      */
-    private TreeMap<String, String> _blobs;
+    private TreeMap<String, String> _objects;
 
     public Commit(String msg, String pID,
-                  TreeMap<String, String> blobs, String date) {
+                  TreeMap<String, String> objects, String date) {
         this._timeStamp = date;
         this._parentID = pID;
         this._message = msg;
         this._ownID = sha1(msg, pID, this._timeStamp);
-        this._blobs = blobs;
+        this._objects = objects;
 
     }
 
@@ -60,8 +56,8 @@ public class Commit implements Serializable {
         return this._timeStamp;
     }
 
-    public TreeMap<String, String> getBlobs() {
-        return this._blobs;
+    public TreeMap<String, String> getObjects() {
+        return this._objects;
     }
 
     public void changeOwnID(String hash) {
@@ -77,5 +73,3 @@ public class Commit implements Serializable {
     }
 
 }
-
-

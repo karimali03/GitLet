@@ -1,8 +1,8 @@
-package gitlet;
+package commitra;
 
 import java.util.TreeMap;
 
-import static gitlet.Utils.sha1;
+import static commitra.Utils.sha1;
 
 /** Creates a Merge Commit, same as
  * main commit class but with a second parent.

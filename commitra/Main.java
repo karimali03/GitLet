@@ -1,58 +1,58 @@
-package gitlet;
+package commitra;
 
 import java.io.IOException;
 
 public class Main {
 
     public static void main(String... args) throws IOException {
+        Reposotiry repo = new Reposotiry();
         if (args.length == 0) {
             System.out.println("Please enter a command.");
             return;
         }
-
-        Reposotiry repo = new Reposotiry(args[args.length-1]);
-        String[] newArgs = new String[args.length - 1];
-        System.arraycopy(args, 0, newArgs, 0, args.length - 1);
         
         switch (args[0]) {
             case "init":
-                repo.init(newArgs);
+                repo.init(args);
                 break;
             case "add":
-                repo.add(newArgs);
+                repo.add(args);
                 break;
             case "commit":
-                repo.commit(newArgs);
+                repo.commit(args);
                 break;
             case "rm":
-                repo.remove(newArgs);
+                repo.remove(args);
                 break;
             case "log":
-                repo.log(newArgs);
+                repo.log(args);
                 break;
             case "global-log":
-                repo.globalLog(newArgs);
+                repo.globalLog(args);
                 break;
             case "find":
-                repo.find(newArgs);
+                repo.find(args);
                 break;
             case "status":
-                repo.status(newArgs);
+                repo.status(args);
                 break;
             case "checkout":
-                repo.checkout(newArgs);
+                repo.checkout(args);
+                break;
+            case "switch":
+                repo.switchBranch(args);
                 break;
             case "branch":
-                repo.branch(newArgs);
+                repo.branch(args);
                 break;
             case "rm-branch":
-                repo.removeBranch(newArgs);
+                repo.removeBranch(args);
                 break;
             case "reset":
-                repo.reset(newArgs);
+                repo.reset(args);
                 break;
             case "merge":
-                repo.merge(newArgs);
+                repo.merge(args);
                 break;
             default:
                 System.out.println("No command with that name exist.");

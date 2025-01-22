@@ -1,4 +1,4 @@
-package gitlet;
+package commitra;
 
 
 
@@ -13,47 +13,45 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static gitlet.Utils.*;
+import static commitra.Utils.*;
 
 
 public class Reposotiry implements Serializable {
 
     /** Pathname to the current working directory.
      */
-    private  File _CWD;
+    private final File _CWD;
 
-    /** Pathname to the Gitlet directory.
-     */
-    static  File GITLET = new File(".gitlet");
+    static final File COMMITRA = new File(".commitra");
 
     /** Pathname to the Commits directory.
      */
-    static  File COMMITS = new File(GITLET
+    static final File COMMITS = new File(COMMITRA
             + File.separator + "commits");
 
     /** Pathname to the Branches directory.
      */
-    static  File BRANCHES = new File(GITLET
+    static final File BRANCHES = new File(COMMITRA
             + File.separator + "branches");
 
     /** Pathname to the Head Branch text file.
      */
-    static  File HEAD_BRANCH = new File(BRANCHES
+    static final File HEAD_BRANCH = new File(BRANCHES
             + File.separator + "head.txt");
 
     /** Pathname to the Staging Area text file.
      */
-    static  File STAGING_AREA = new File(GITLET
+    static final File STAGING_AREA = new File(COMMITRA
             + File.separator + "staging.txt");
 
     /** Pathname to the Blobs directory.
      */
-    static  File BLOBS = new File(GITLET
-            + File.separator + "blobs");
+    static final File OBJECTS = new File(COMMITRA
+            + File.separator + "objects");
 
     /**Pathname to Global Log text file.
      */
-    static  File GLOBAL_LOG = new File(GITLET
+    static final File GLOBAL_LOG = new File(COMMITRA
             + File.separator + "global.txt");
 
     /** Contains the current Head Branch.
@@ -68,16 +66,8 @@ public class Reposotiry implements Serializable {
      */
     private StagingArea _staging;
 
-    public Reposotiry(String Dir) {
-        this._CWD = new File(Dir);
-        GITLET = new File(_CWD, ".gitlet");
-        COMMITS = new File(GITLET, "commits");
-        BRANCHES = new File(GITLET, "branches");
-        HEAD_BRANCH = new File(BRANCHES, "head.txt");
-        STAGING_AREA = new File(GITLET, "staging.txt");
-        BLOBS = new File(GITLET, "blobs");
-        GLOBAL_LOG = new File(GITLET, "global.txt");
-
+    public Reposotiry() {
+        this._CWD = new File(System.getProperty("user.dir"));
         if (HEAD_BRANCH.exists()) {
             this._headBranch = readObject(HEAD_BRANCH, Branch.class);
             File head = new File(COMMITS + File.separator
@@ -91,8 +81,8 @@ public class Reposotiry implements Serializable {
     }
 
     public void init(String...args) throws IOException {
-        if (GITLET.exists()) {
-            System.out.println("A Gitlet version-control system already "
+        if (COMMITRA.exists()) {
+            System.out.println("A Commitra version-control system already "
                     + "exists in the current directory.");
             return;
         }
@@ -100,7 +90,7 @@ public class Reposotiry implements Serializable {
             return;
         }
 
-        GITLET.mkdir();
+        COMMITRA.mkdir();
 
         Commit initial = new Commit("initial commit", "", new TreeMap<>(),
                 "Wed Dec 31 16:00:00 1969 -0800");
@@ -112,16 +102,16 @@ public class Reposotiry implements Serializable {
         String log = initial.toString();
         GLOBAL_LOG.createNewFile();
         writeContents(GLOBAL_LOG, log + "\n");
-        BLOBS.mkdir();
-        Utils.join(GITLET, "blobs");
+        OBJECTS.mkdir();
+        Utils.join(COMMITRA, "objects");
         COMMITS.mkdir();
-        Utils.join(GITLET, ".commits");
+        Utils.join(COMMITRA, ".commits");
         BRANCHES.mkdir();
-        Utils.join(GITLET, ".branches");
+        Utils.join(COMMITRA, ".branches");
 
         STAGING_AREA.createNewFile();
         writeObject(STAGING_AREA, this._staging);
-        Utils.join(GITLET, ".staging");
+        Utils.join(COMMITRA, ".staging");
 
         File masterBranch = new File(BRANCHES
                 + File.separator + branch.getName() + ".txt");
@@ -143,7 +133,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void add(String...args) throws IOException {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(2, args)) {
@@ -156,17 +146,17 @@ public class Reposotiry implements Serializable {
         } else {
             byte[] contents = readContents(curr);
             String hash = sha1(contents);
-            if (getHeadCommit().getBlobs().get(fileName) != null
-                    && getHeadCommit().getBlobs().get(fileName).equals(hash)) {
+            if (getHeadCommit().getObjects().get(fileName) != null
+                    && getHeadCommit().getObjects().get(fileName).equals(hash)) {
                 if (getStage().getRemoveFiles().contains(fileName)) {
                     getStage().getRemoveFiles().remove(fileName);
                     writeObject(STAGING_AREA, getStage());
                 }
             } else {
                 getStage().getRemoveFiles().remove(fileName);
-                File blob = new File(BLOBS + File.separator + hash + ".txt");
-                blob.createNewFile();
-                writeContents(blob, contents);
+                File object = new File(OBJECTS + File.separator + hash + ".txt");
+                object.createNewFile(); 
+                writeContents(object, contents);
                 getStage().add(fileName, hash);
                 writeObject(STAGING_AREA, getStage());
             }
@@ -174,10 +164,10 @@ public class Reposotiry implements Serializable {
     }
 
     public void commit(String...args) throws IOException {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
-        if (helper(3, args)) {
+        if (helper(2, args)) {
             return;
         }
         if (getStage().getAddFiles().isEmpty()
@@ -192,7 +182,7 @@ public class Reposotiry implements Serializable {
         String msg = args[1];
         @SuppressWarnings("unchecked")
         TreeMap<String, String> newBlobs =
-                (TreeMap<String, String>) getHeadCommit().getBlobs().clone();
+                (TreeMap<String, String>) getHeadCommit().getObjects().clone();
 
         for (String x : _staging.getRemoveFiles()) {
             newBlobs.remove(x);
@@ -230,8 +220,68 @@ public class Reposotiry implements Serializable {
 
     }
 
+    public void switchBranch(String...args) throws IOException {
+        if (!commitraExists()) {
+            return;
+        }
+
+        if(helper(2, args)){
+            return;
+        }
+
+        String branchName = args[1] + ".txt";
+        List<String> files = plainFilenamesIn(BRANCHES);
+        File branch = new File(BRANCHES
+                + File.separator + branchName);
+        if (!files.contains(branchName)) {
+            System.out.println("No such branch exists.");
+            return;
+        }
+        Branch givenBranch = readObject(branch, Branch.class);
+        if (givenBranch.getName().equals(getBranch().getName())) {
+            System.out.println("No need to checkout the current branch.");
+            return;
+        }
+        _switchBranch(givenBranch);
+    }
+
+
+    public void _switchBranch(Branch givenBranch) throws IOException {
+        Branch curr = getBranch();
+        List<String> cwdFiles = plainFilenamesIn(_CWD);
+        if (!checkIfUntracked(getHeadCommit(), givenBranch.getLastCommit())) {
+            return;
+        }
+        Commit given = givenBranch.getLastCommit();
+        assert cwdFiles != null;
+        for (String filename : cwdFiles) {
+            if (curr.getLastCommit().getObjects().containsKey(filename)
+                    && !given.getObjects().containsKey(filename)) {
+                File currFile = new File(_CWD + File.separator + filename);
+                restrictedDelete(currFile);
+            }
+        }
+
+        this._headBranch = givenBranch;
+        writeObject(HEAD_BRANCH, getBranch());
+        writeObject(new File(BRANCHES + File.separator
+                + getBranch().getName() + ".txt"), getBranch());
+        this._head = getBranch().getLastCommit();
+
+        for (String filename: getHeadCommit().getObjects().keySet()) {
+            checkout(filename);
+        }
+
+        if (!curr.getName().equals(getBranch().getName())) {
+            getStage().clear();
+            writeObject(STAGING_AREA, getStage());
+        }
+
+
+    }
+
     public void checkout(String...args) throws IOException {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (args.length != 2 && args.length != 3 && args.length != 4) {
@@ -246,35 +296,20 @@ public class Reposotiry implements Serializable {
             checkout(args[2]);
         } else if (args.length == 4) {
             checkout(args[3], args[1]);
-        } else if (args.length == 2) {
-            String branchName = args[1] + ".txt";
-            List<String> files = plainFilenamesIn(BRANCHES);
-            File branch = new File(BRANCHES
-                    + File.separator + branchName);
-            if (!files.contains(branchName)) {
-                System.out.println("No such branch exists.");
-                return;
-            }
-            Branch newBranch = readObject(branch, Branch.class);
-            if (newBranch.getName().equals(getBranch().getName())) {
-                System.out.println("No need to checkout the current branch.");
-                return;
-            }
-            checkout(newBranch);
-        }
+        } 
     }
 
     public void checkout(String filename) throws IOException {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
-        if ((getHeadCommit().getBlobs() != null)
-                && !getHeadCommit().getBlobs().containsKey(filename)) {
+        if ((getHeadCommit().getObjects() != null)
+                && !getHeadCommit().getObjects().containsKey(filename)) {
             System.out.println("File does not exist in that commit.");
             return;
         }
-        File headVersion = new File(BLOBS + File.separator
-                + getHeadCommit().getBlobs().get(filename) + ".txt");
+        File headVersion = new File(OBJECTS + File.separator
+                + getHeadCommit().getObjects().get(filename) + ".txt");
         File curr = new File(_CWD + File.separator + filename);
         if (!curr.exists()) {
             curr.createNewFile();
@@ -284,7 +319,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void checkout(String filename, String commitID) throws IOException {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
 
@@ -318,43 +353,9 @@ public class Reposotiry implements Serializable {
         return "bad";
     }
 
-    public void checkout(Branch givenBranch) throws IOException {
-        if (!gitletExists()) {
-            return;
-        }
-        Branch curr = getBranch();
-        List<String> cwdFiles = plainFilenamesIn(_CWD);
-        if (!checkIfUntracked(getHeadCommit(), givenBranch.getLastCommit())) {
-            return;
-        }
-        Commit given = givenBranch.getLastCommit();
-        assert cwdFiles != null;
-        for (String filename : cwdFiles) {
-            if (curr.getLastCommit().getBlobs().containsKey(filename)
-                    && !given.getBlobs().containsKey(filename)) {
-                File currFile = new File(_CWD + File.separator + filename);
-                restrictedDelete(currFile);
-            }
-        }
-
-        this._headBranch = givenBranch;
-        writeObject(HEAD_BRANCH, getBranch());
-        writeObject(new File(BRANCHES + File.separator
-                + getBranch().getName() + ".txt"), getBranch());
-        this._head = getBranch().getLastCommit();
-
-        for (String filename: getHeadCommit().getBlobs().keySet()) {
-            checkout(filename);
-        }
-
-        if (!curr.getName().equals(getBranch().getName())) {
-            getStage().clear();
-            writeObject(STAGING_AREA, getStage());
-        }
-    }
 
     public void remove(String...args) {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(2, args)) {
@@ -363,7 +364,7 @@ public class Reposotiry implements Serializable {
         String filename = args[1];
         File curr = new File(_CWD + File.separator + filename);
 
-        if (getHeadCommit().getBlobs().containsKey(filename)) {
+        if (getHeadCommit().getObjects().containsKey(filename)) {
             restrictedDelete(curr);
             getStage().addRemove(filename);
             getStage().getAddFiles().remove(filename);
@@ -377,7 +378,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void log(String...args) {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(1, args)) {
@@ -397,7 +398,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void globalLog(String...args) {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(1, args)) {
@@ -407,7 +408,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void find(String...args) {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(2, args)) {
@@ -432,51 +433,151 @@ public class Reposotiry implements Serializable {
 
     }
 
-    public void status(String...args) {
-        if (!gitletExists()) {
+    public void status(String... args) { 
+        if (!commitraExists()) {
             return;
         }
         if (helper(1, args)) {
             return;
         }
+    
         List<String> branches = plainFilenamesIn(BRANCHES);
         Collections.sort(branches);
-
+    
         List<String> addFiles = new ArrayList<>();
         addFiles.addAll(getStage().getAddFiles().keySet());
         Collections.sort(addFiles);
-
+    
         List<String> removeFiles = new ArrayList<>();
         removeFiles.addAll(getStage().getRemoveFiles());
         Collections.sort(removeFiles);
+    
+        // Get the current branch and its commit
+        Branch currentBranch = getBranch();
+
+        // Get files that are modified but not staged
+        List<String> modifiedFilesNotStaged = getModifications();
+
+        // Get untracked files (files in CWD but not in head commit)
+        List<String> untrackedFiles = getUntrackedFilesCWD();
+
+        // Print the status output
         System.out.println("=== Branches ===");
-        System.out.println("*" + getBranch().getName());
-        for (String branch: branches) {
-            Branch curr = readObject(new File(BRANCHES
-                    + File.separator + branch), Branch.class);
-            if (!curr.getName().equals(getBranch().getName())) {
+        System.out.println("*" + currentBranch.getName());
+        for (String branch : branches) {
+            Branch curr = readObject(new File(BRANCHES + File.separator + branch), Branch.class);
+            if (!curr.getName().equals(currentBranch.getName())) {
                 System.out.println(curr.getName());
             }
         }
-        System.out.println();
+        
+        // Staged Files
         System.out.println("=== Staged Files ===");
-        for (String filename: addFiles) {
+        for (String filename : addFiles) {
             System.out.println(filename);
         }
-        System.out.println();
+        
+        // Removed Files
         System.out.println("=== Removed Files ===");
-        for (String filename: removeFiles) {
+        for (String filename : removeFiles) {
             System.out.println(filename);
         }
-        System.out.println();
+    
+        // Modifications Not Staged For Commit
         System.out.println("=== Modifications Not Staged For Commit ===");
-        System.out.println();
+        Collections.sort(modifiedFilesNotStaged);
+        for (String filename : modifiedFilesNotStaged) {
+            System.out.println(filename);
+        }
+    
+        // Untracked Files
         System.out.println("=== Untracked Files ===");
-        System.out.println();
+        Collections.sort(untrackedFiles);
+        for (String filename : untrackedFiles) {
+            System.out.println(filename);
+        }
+    }   
+
+    public ArrayList<String> getUntrackedFilesCWD() {
+        ArrayList<String> untracked = new ArrayList<>();
+        File[] cwdFiles = _CWD.listFiles();
+    
+        for (File file : cwdFiles) {
+            String fileName = file.getName();
+            boolean isTracked = false;
+    
+            // Check if file is tracked
+            Commit lastCommit = getHeadCommit();
+            if (lastCommit.getObjects() != null && lastCommit.getObjects().containsKey(fileName)) {
+                isTracked = true;
+            }
+    
+            // Check if file is staged
+            if (_staging.getAddFiles().containsKey(fileName)) {
+                isTracked = true;
+            }
+    
+            // If not tracked or staged, add to untracked
+            if (!isTracked && !file.isDirectory()) {
+                untracked.add(fileName);
+            }
+        }
+        
+        return untracked;
     }
+    
+
+    public ArrayList<String> getModifications() {
+        ArrayList<String> modifications = new ArrayList<>();
+        // check modifications in staging area
+        for (String fileName : _staging.getAddFiles().keySet()) {
+            File file = new File(_CWD + File.separator + fileName);
+            String stagedHash = _staging.getAddFiles().get(fileName);
+    
+            if (!file.exists()) {
+                modifications.add(fileName + " (deleted)");
+            } else {
+                String currentHash = Utils.sha1(Utils.readContents(file));
+                StringBuilder sh = new StringBuilder(stagedHash);
+                StringBuilder ch = new StringBuilder(currentHash);
+                if (!sh.toString().equals(ch.toString())) {
+                    modifications.add(fileName + " (modified)");
+                }
+            }
+        }
+        ArrayList<String> removed_file = _staging.getRemoveFiles();
+        for(String fileName : removed_file){
+            File file = new File(_CWD + File.separator + fileName);
+            if(file.exists()){
+                modifications.add(fileName + " (added)");
+            }
+        }
+
+        // check modifications in the tracked files
+        Commit lastCommit = getHeadCommit();
+        if (lastCommit.getObjects() != null) {
+            for (String fileName : lastCommit.getObjects().keySet()) {
+                File file = new File(_CWD + File.separator + fileName);
+                if (!file.exists()) {
+                   if(!removed_file.contains(fileName))
+                    modifications.add(fileName + " (deleted)");
+                } else {
+                    String currentHash = Utils.sha1(Utils.readContents(file));
+                    String lastCommitHash = lastCommit.getObjects().get(fileName);
+                    StringBuilder lh = new StringBuilder(lastCommitHash);
+                    StringBuilder ch = new StringBuilder(currentHash);
+                    if (!lh.toString().equals(ch.toString()) && !_staging.getAddFiles().containsKey(fileName)) {
+                        modifications.add(fileName + " (modified)");
+                    }
+                }
+            }
+        }
+        
+        return modifications;
+    }    
 
     public void branch(String...args) throws IOException {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(2, args)) {
@@ -495,7 +596,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void removeBranch(String...args) {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(2, args)) {
@@ -517,7 +618,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void reset(String...args) throws IOException {
-        if (!gitletExists()) {
+        if (!commitraExists()) {
             return;
         }
         if (helper(2, args)) {
@@ -535,8 +636,8 @@ public class Reposotiry implements Serializable {
             return;
         }
         for (String file: Objects.requireNonNull(plainFilenamesIn(_CWD))) {
-            if (getHeadCommit().getBlobs().containsKey(file)
-                    && !replacement.getBlobs().containsKey(file)) {
+            if (getHeadCommit().getObjects().containsKey(file)
+                    && !replacement.getObjects().containsKey(file)) {
                 Utils.restrictedDelete(file);
             }
         }
@@ -545,7 +646,7 @@ public class Reposotiry implements Serializable {
         writeObject(new File(BRANCHES + File.separator
                 + getBranch().getName() + ".txt"), getBranch());
         this._head = replacement;
-        for (String filename : replacement.getBlobs().keySet()) {
+        for (String filename : replacement.getObjects().keySet()) {
             checkout(filename);
         }
         getStage().clear();
@@ -553,7 +654,7 @@ public class Reposotiry implements Serializable {
     }
 
     public void merge(String...args) throws IOException {
-        if ((!gitletExists()) || helper(2, args)
+        if ((!commitraExists()) || helper(2, args)
                 || mergeErrors(args[1])) {
             return;
         }
@@ -564,38 +665,38 @@ public class Reposotiry implements Serializable {
         Commit split = splitPoint(head, given);
         Boolean conf = false;
         for (String file: allFiles(head, split, given)) {
-            String hHash = head.getBlobs().get(file);
-            String gHash = given.getBlobs().get(file);
-            String sHash = split.getBlobs().get(file);
+            String hHash = head.getObjects().get(file);
+            String gHash = given.getObjects().get(file);
+            String sHash = split.getObjects().get(file);
             boolean conflict = false;
-            if (head.getBlobs().containsKey(file)
-                    && given.getBlobs().containsKey(file)) {
+            if (head.getObjects().containsKey(file)
+                    && given.getObjects().containsKey(file)) {
                 conflict = !hHash.equals(sHash) && !gHash.equals(sHash)
                         && !hHash.equals(gHash);
             }
 
-            if (split.getBlobs().containsKey(file)) {
+            if (split.getObjects().containsKey(file)) {
                 if (conflict) {
                     mergeHelper1(hHash, file, gHash);
                     conf = true;
-                } else if (head.getBlobs().containsKey(file)
+                } else if (head.getObjects().containsKey(file)
                         && hHash.equals(sHash)
-                        && !given.getBlobs().containsKey(file)) {
+                        && !given.getObjects().containsKey(file)) {
                     remove("remove", file);
-                } else if (given.getBlobs().containsKey(file)
+                } else if (given.getObjects().containsKey(file)
                         && !gHash.equals(sHash) && sHash.equals(hHash)) {
                     checkout(file, given.getOwnID());
-                } else if (given.getBlobs().containsKey(file)
+                } else if (given.getObjects().containsKey(file)
                         && gHash.equals(sHash)
-                        && !head.getBlobs().containsKey(file)) {
+                        && !head.getObjects().containsKey(file)) {
                     getStage().addRemove(file);
                 }
             } else {
                 if (conflict) {
                     mergeHelper1(hHash, file, gHash);
                     conf = true;
-                } else if (given.getBlobs().containsKey(file)
-                        && !head.getBlobs().containsKey(file)) {
+                } else if (given.getObjects().containsKey(file)
+                        && !head.getObjects().containsKey(file)) {
                     checkout(file, given.getOwnID());
                     add("add", file);
                 }
@@ -612,15 +713,15 @@ public class Reposotiry implements Serializable {
     }
 
     public ArrayList<String> allFiles(Commit c, Commit s, Commit g) {
-        ArrayList<String> allFiles = new ArrayList<>(c.getBlobs().keySet());
+        ArrayList<String> allFiles = new ArrayList<>(c.getObjects().keySet());
 
-        for (String file : s.getBlobs().keySet()) {
+        for (String file : s.getObjects().keySet()) {
             if (!allFiles.contains(file)) {
                 allFiles.add(file);
             }
         }
 
-        for (String file : g.getBlobs().keySet()) {
+        for (String file : g.getObjects().keySet()) {
             if (!allFiles.contains(file)) {
                 allFiles.add(file);
             }
@@ -651,8 +752,8 @@ public class Reposotiry implements Serializable {
 
     public void mergeHelper1(String hBlob, String file, String gBlob) {
         File merge = new File(_CWD + File.separator + file);
-        File head = new File(BLOBS + File.separator + hBlob + ".txt");
-        File given = new File(BLOBS + File.separator + gBlob + ".txt");
+        File head = new File(OBJECTS + File.separator + hBlob + ".txt");
+        File given = new File(OBJECTS + File.separator + gBlob + ".txt");
         String contents = "<<<<<<< HEAD\n";
         if (head.exists()) {
             contents += readContentsAsString(head);
@@ -663,7 +764,6 @@ public class Reposotiry implements Serializable {
         }
         contents += ">>>>>>>";
         writeContents(merge, contents);
-        System.out.println("Encountered a merge conflict.");
     }
 
     public boolean mergeErrors(String branch) throws IOException {
@@ -697,7 +797,7 @@ public class Reposotiry implements Serializable {
                     + "ancestor of the current branch.");
             return true;
         } else if (split.equals(head)) {
-            checkout(readObject(givenBranch, Branch.class));
+            _switchBranch(readObject(givenBranch, Branch.class));
             System.out.println("Current branch fast-forwarded.");
             return true;
         }
@@ -752,8 +852,8 @@ public class Reposotiry implements Serializable {
         List<String> cwdFiles = plainFilenamesIn(_CWD);
         assert cwdFiles != null;
         for (String filename : cwdFiles) {
-            if (!head.getBlobs().containsKey(filename)
-                    && given.getBlobs().containsKey(filename)) {
+            if (!head.getObjects().containsKey(filename)
+                    && given.getObjects().containsKey(filename)) {
                 System.out.println("There is an untracked file in the way; "
                         + "delete it, or add and commit it first.");
                 return false;
@@ -765,11 +865,11 @@ public class Reposotiry implements Serializable {
     public void mergeCommit(String msg, Commit parent2) throws IOException {
         @SuppressWarnings("unchecked")
         TreeMap<String, String> newBlobs =
-                (TreeMap<String, String>) getHeadCommit().getBlobs().clone();
+                (TreeMap<String, String>) getHeadCommit().getObjects().clone();
 
-        for (String filename : parent2.getBlobs().keySet()) {
+        for (String filename : parent2.getObjects().keySet()) {
             if (!newBlobs.containsKey(filename)) {
-                newBlobs.put(filename, parent2.getBlobs().get(filename));
+                newBlobs.put(filename, parent2.getObjects().get(filename));
             }
         }
 
@@ -816,9 +916,9 @@ public class Reposotiry implements Serializable {
         }
     }
 
-    static boolean gitletExists() {
-        if (!GITLET.exists()) {
-            System.out.println("Not in an initialized Gitlet directory.");
+    static boolean commitraExists() {
+        if (!COMMITRA.exists()) {
+            System.out.println("Not in an initialized Commitra directory.");
             return false;
         }
         return true;

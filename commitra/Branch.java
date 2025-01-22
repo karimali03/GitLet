@@ -1,10 +1,9 @@
-package gitlet;
+package commitra;
 
 import java.io.Serializable;
 
 /** Creates a Branch object that tracts the last commit
  * in the branch.
- * @author Rodrigo Espinoza
  */
 public class Branch implements Serializable {
 

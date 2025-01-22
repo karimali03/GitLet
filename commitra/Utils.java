@@ -1,6 +1,6 @@
 /* Copyright (C) 2015, 2022 Paul N. Hilfinger and the Regents of the
  * University of California.  All rights reserved. */
-package gitlet;
+package commitra;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -66,10 +66,10 @@ class Utils {
     /** Deletes FILE if it exists and is not a directory.  Returns true
      *  if FILE was deleted, and false otherwise.  Refuses to delete FILE
      *  and throws IllegalArgumentException unless the directory designated by
-     *  FILE also contains a directory named .gitlet. */
+     * */
     static boolean restrictedDelete(File file) {
-        if (!(new File(file.getParentFile(), ".gitlet")).isDirectory()) {
-            throw new IllegalArgumentException("not .gitlet working directory");
+        if (!(new File(file.getParentFile(), ".commitra")).isDirectory()) {
+            throw new IllegalArgumentException("not .commitra working directory");
         }
         if (!file.isDirectory()) {
             return file.delete();

@@ -1,6 +1,6 @@
 /* Copyright (C) 2015, 2022 Paul N. Hilfinger and the Regents of the
  * University of California.  All rights reserved. */
-package gitlet;
+package commitra;
 
 import java.io.File;
 
@@ -42,4 +42,3 @@ public class DumpObj {
         }
     }
 }
-

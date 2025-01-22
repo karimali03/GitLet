@@ -1,13 +1,9 @@
-package gitlet;
+package commitra;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-/**Creates Staging Area used when
- * creating a new commit in Gitlet.
- * @author Rodrigo Espinoza
- */
 public class StagingArea implements Serializable {
 
     /** Contains files set for removal.
